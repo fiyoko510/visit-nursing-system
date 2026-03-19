@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おれんじさん🍊 - 訪問看護予約</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="header-title">
+                    <span class="orange-emoji">🍊</span>
+                    おれんじさん
+                </h1>
+                <p class="header-subtitle">訪問看護予約システム</p>
+            </div>
+        </header>
+
+        <!-- メインコンテンツ -->
+        <main class="main-content">
+            <!-- ステップインジケーター -->
+            <div class="step-indicator">
+                <div class="step active" id="step-1">
+                    <span class="step-number">1</span>
+                    <span class="step-label">日付選択</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" id="step-2">
+                    <span class="step-number">2</span>
+                    <span class="step-label">時間選択</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" id="step-3">
+                    <span class="step-number">3</span>
+                    <span class="step-label">確認</span>
+                </div>
+            </div>
+
+            <!-- ステップ1: 日付選択 -->
+            <section class="step-content active" id="step-content-1">
+                <h2>訪問日を選んでください</h2>
+                <div class="date-picker-wrapper">
+                    <input type="date" id="datePicker" class="date-picker" required>
+                </div>
+                <button class="btn btn-primary" onclick="goToTimeSelection()">
+                    次へ進む
+                </button>
+            </section>
+
+            <!-- ステップ2: 時間選択 -->
+            <section class="step-content" id="step-content-2">
+                <h2>訪問時間を選んでください</h2>
+                <p class="time-selection-hint">30分単位で選べます。複数選んで連続した時間にできます。</p>
+                
+                <!-- 時間選択UI -->
+                <div class="time-selection-container">
+                    <!-- 時間ボタン -->
+                    <div class="time-selector">
+                        <label class="time-label">時間（時）</label>
+                        <div class="button-grid hour-grid">
+                            <button class="time-btn hour-btn" data-hour="09">09</button>
+                            <button class="time-btn hour-btn" data-hour="10">10</button>
+                            <button class="time-btn hour-btn" data-hour="11">11</button>
+                            <button class="time-btn hour-btn" data-hour="12">12</button>
+                            <button class="time-btn hour-btn" data-hour="13">13</button>
+                            <button class="time-btn hour-btn" data-hour="14">14</button>
+                            <button class="time-btn hour-btn" data-hour="15">15</button>
+                            <button class="time-btn hour-btn" data-hour="16">16</button>
+                            <button class="time-btn hour-btn" data-hour="17">17</button>
+                        </div>
+                    </div>
+
+                    <!-- 分ボタン -->
+                    <div class="time-selector">
+                        <label class="time-label">分</label>
+                        <div class="button-grid minute-grid">
+                            <button class="time-btn minute-btn" data-minute="00">00</button>
+                            <button class="time-btn minute-btn" data-minute="15">15</button>
+                            <button class="time-btn minute-btn" data-minute="30">30</button>
+                            <button class="time-btn minute-btn" data-minute="45">45</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 選択結果表示 -->
+                <div class="selected-slots-container">
+                    <h3>選んだ時間帯</h3>
+                    <div class="selected-slots" id="selectedSlots">
+                        <p class="empty-message">時間を選んでください</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="addTimeSlot()">
+                        ➕ この時間を追加
+                    </button>
+                </div>
+
+                <!-- 合計時間表示 -->
+                <div class="total-time-display">
+                    <p>合計滞在時間: <span id="totalMinutes">0</span>分</p>
+                </div>
+
+                <!-- ナビゲーションボタン -->
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="backToDateSelection()">
+                        戻る
+                    </button>
+                    <button class="btn btn-primary" onclick="goToConfirmation()" id="confirmBtn" disabled>
+                        確認へ進む
+                    </button>
+                </div>
+            </section>
+
+            <!-- ステップ3: 確認 -->
+            <section class="step-content" id="step-content-3">
+                <h2>予約内容を確認してください</h2>
+                
+                <div class="confirmation-card">
+                    <div class="confirmation-item">
+                        <label>訪問日</label>
+                        <p id="confirmDate">-</p>
+                    </div>
+                    <div class="confirmation-item">
+                        <label>訪問時間</label>
+                        <p id="confirmTime">-</p>
+                    </div>
+                    <div class="confirmation-item">
+                        <label>合計滞在時間</label>
+                        <p id="confirmDuration">-</p>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="backToTimeSelection()">
+                        戻る
+                    </button>
+                    <button class="btn btn-primary btn-large" onclick="submitReservation()">
+                        予約を確定する
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- ローディング表示 -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>送信中...</p>
+        </div>
+
+        <!-- 成功メッセージ -->
+        <div class="modal" id="successModal">
+            <div class="modal-content success">
+                <div class="success-icon">✓</div>
+                <h2>予約が完了しました！</h2>
+                <p>訪問看護の予約を受け付けました。<br>確認のご連絡をお待ちください。</p>
+                <button class="btn btn-primary" onclick="closeApp()">
+                    LINEに戻る
+                </button>
+            </div>
+        </div>
+
+        <!-- エラーメッセージ -->
+        <div class="modal" id="errorModal">
+            <div class="modal-content error">
+                <div class="error-icon">⚠</div>
+                <h2>エラーが発生しました</h2>
+                <p id="errorMessage">もう一度お試しください。</p>
+                <button class="btn btn-primary" onclick="closeErrorModal()">
+                    戻る
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LINE SDK -->
+    <script src="https://d.line-scdn.net/liff/d/v2/sdk.js"></script>
+    <!-- メインスクリプト -->
+    <script src="script.js"></script>
+</body>
+</html>
