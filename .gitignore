@@ -1,0 +1,33 @@
+# 環境変数
+.env
+.env.local
+.env.*.local
+
+# ノードモジュール
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDE設定
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# GAS関連
+clasp.json
+.clasp.json
+
+# ビルド出力
+dist/
+build/
+
+# ログファイル
+*.log
+logs/
+
+# 一時ファイル
+tmp/
+temp/
