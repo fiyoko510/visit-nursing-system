@@ -1,20 +1,118 @@
 /**
- * Googleカレンダー操作ライブラリ
+ * Googleカレンダー・スプレッドシート操作ライブラリ
  * 
  * このモジュールは以下の機能を提供します：
  * - 訪問予定の登録
  * - 訪問予定の更新
  * - 訪問予定の削除
  * - 訪問予定の検索
+ * - スプレッドシートへの記録
  */
 
 // ============================================================================
 // 定数定義
 // ============================================================================
 
-const CALENDAR_ID_PROP = PropertiesService.getScriptProperties().getProperty('CALENDAR_ID');
+// カレンダーID（おれんじさん用）
+const CALENDAR_ID = '64648f1b8e57c434888cc77fc75062f7d35b2e41f74b54beeb03bbe4dd11254c@group.calendar.google.com';
+
+// スプレッドシートID（予約管理用）
+const SPREADSHEET_ID = '1OiE4g3gWDC0cuSeBmcZCMP70G0-XPOIqAQtFS3rlRI4';
+
+// スプレッドシートのシート名
+const SHEET_NAME = '予約管理';
+
 const VISIT_EVENT_PREFIX = '[訪問看護]';
 const DEFAULT_DURATION_MINUTES = 30;
+
+// ============================================================================
+// スプレッドシート操作関数
+// ============================================================================
+
+/**
+ * スプレッドシートを初期化（ヘッダー行を作成）
+ */
+function initializeSpreadsheet() {
+  try {
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = spreadsheet.getSheetByName(SHEET_NAME);
+    
+    // シートが存在しない場合は作成
+    if (!sheet) {
+      sheet = spreadsheet.insertSheet(SHEET_NAME);
+    }
+    
+    // ヘッダー行を設定
+    const headers = ['利用者名（LINE名）', '訪問日時', '滞在時間（分）', '登録日時', 'メモ'];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    
+    // ヘッダーのフォーマット
+    const headerRange = sheet.getRange(1, 1, 1, headers.length);
+    headerRange.setBackground('#FF9500');
+    headerRange.setFontColor('#FFFFFF');
+    headerRange.setFontWeight('bold');
+    
+    Logger.log('Spreadsheet initialized');
+  } catch (error) {
+    Logger.log('Error in initializeSpreadsheet: ' + error.toString());
+  }
+}
+
+/**
+ * 訪問予定をスプレッドシートに記録
+ * @param {Object} visitRequest - 訪問希望オブジェクト
+ * @param {string} eventId - イベントID
+ * @returns {boolean} 成功時true、失敗時false
+ */
+function recordVisitToSpreadsheet(visitRequest, eventId) {
+  try {
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+    
+    if (!sheet) {
+      Logger.log('Sheet not found: ' + SHEET_NAME);
+      return false;
+    }
+    
+    // 訪問日時をフォーマット
+    const visitDateTimeStr = Utilities.formatDate(visitRequest.startTime, 'Asia/Tokyo', 'yyyy年MM月dd日 HH:mm');
+    
+    // 登録日時を取得
+    const registeredDateTime = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日 HH:mm:ss');
+    
+    // 新しい行を追加
+    const newRow = [visitRequest.userName, visitDateTimeStr, visitRequest.durationMinutes, registeredDateTime, visitRequest.memo || ''];
+    sheet.appendRow(newRow);
+    
+    Logger.log('Visit recorded to spreadsheet: ' + visitRequest.userName + ' - ' + visitDateTimeStr);
+    return true;
+  } catch (error) {
+    Logger.log('Error in recordVisitToSpreadsheet: ' + error.toString());
+    return false;
+  }
+}
+
+/**
+ * スプレッドシートから訪問記録を取得
+ * @returns {Array} 訪問記録の配列
+ */
+function getVisitRecords() {
+  try {
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+    
+    if (!sheet) {
+      return [];
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    // ヘッダー行を除外
+    return data.slice(1);
+  } catch (error) {
+    Logger.log('Error in getVisitRecords: ' + error.toString());
+    return [];
+  }
+}
 
 // ============================================================================
 // カレンダー操作関数
@@ -24,36 +122,42 @@ const DEFAULT_DURATION_MINUTES = 30;
  * 訪問予定をGoogleカレンダーに追加
  * @param {Object} visitRequest - 訪問希望オブジェクト
  *   - startTime: Date オブジェクト（開始時刻）
- *   - userId: string ユーザーID
- *   - notes: string（オプション）備考
- * @param {string} userId - ユーザーID
+ *   - endTime: Date オブジェクト（終了時刻）
+ *   - userName: string ユーザー名
+ *   - durationMinutes: number 滞在時間（分）
+ *   - memo: string（オプション）備考
  * @returns {string} 作成されたイベントID、失敗時はnull
  */
-function addVisitToCalendar(visitRequest, userId) {
+function addVisitToCalendar(visitRequest) {
   try {
-    const calendar = CalendarApp.getCalendarById(CALENDAR_ID_PROP);
+    const calendar = CalendarApp.getCalendarById(CALENDAR_ID);
     
     if (!calendar) {
-      Logger.log('Calendar not found: ' + CALENDAR_ID_PROP);
+      Logger.log('Calendar not found: ' + CALENDAR_ID);
       return null;
     }
 
     // イベント作成
     const startTime = visitRequest.startTime;
-    const endTime = new Date(startTime.getTime() + DEFAULT_DURATION_MINUTES * 60 * 1000);
+    const endTime = visitRequest.endTime || new Date(startTime.getTime() + (visitRequest.durationMinutes || DEFAULT_DURATION_MINUTES) * 60 * 1000);
+    const durationMinutes = visitRequest.durationMinutes || DEFAULT_DURATION_MINUTES;
 
-    const eventTitle = VISIT_EVENT_PREFIX + ' ' + userId;
+    const eventTitle = VISIT_EVENT_PREFIX + ' ' + visitRequest.userName;
     const eventDescription = '訪問看護の予定\n' +
-                             'ユーザーID: ' + userId + '\n' +
-                             '登録日時: ' + new Date().toLocaleString('ja-JP');
+                             'ユーザー: ' + visitRequest.userName + '\n' +
+                             '滞在時間: ' + durationMinutes + '分\n' +
+                             '登録日時: ' + Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日 HH:mm:ss');
 
     const event = calendar.createEvent(eventTitle, startTime, endTime, {
       description: eventDescription,
-      location: '訪問先',
-      guests: ADMIN_EMAIL
+      location: '訪問先'
     });
 
     const eventId = event.getId();
+    
+    // スプレッドシートにも記録
+    recordVisitToSpreadsheet(visitRequest, eventId);
+    
     Logger.log('Event created: ' + eventId);
 
     return eventId;
@@ -76,7 +180,7 @@ function addVisitToCalendar(visitRequest, userId) {
  */
 function updateVisitEvent(eventId, updates) {
   try {
-    const calendar = CalendarApp.getCalendarById(CALENDAR_ID_PROP);
+    const calendar = CalendarApp.getCalendarById(CALENDAR_ID);
     const event = calendar.getEventById(eventId);
 
     if (!event) {
@@ -114,7 +218,7 @@ function updateVisitEvent(eventId, updates) {
  */
 function deleteVisitEvent(eventId) {
   try {
-    const calendar = CalendarApp.getCalendarById(CALENDAR_ID_PROP);
+    const calendar = CalendarApp.getCalendarById(CALENDAR_ID);
     const event = calendar.getEventById(eventId);
 
     if (!event) {
@@ -138,7 +242,7 @@ function deleteVisitEvent(eventId) {
  */
 function getVisitsForDate(date) {
   try {
-    const calendar = CalendarApp.getCalendarById(CALENDAR_ID_PROP);
+    const calendar = CalendarApp.getCalendarById(CALENDAR_ID);
     const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
     const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
 
@@ -160,7 +264,7 @@ function getVisitsForDate(date) {
  */
 function getVisitsBetweenDates(startDate, endDate) {
   try {
-    const calendar = CalendarApp.getCalendarById(CALENDAR_ID_PROP);
+    const calendar = CalendarApp.getCalendarById(CALENDAR_ID);
     const events = calendar.getEvents(startDate, endDate);
     const visits = events.filter(event => event.getTitle().includes(VISIT_EVENT_PREFIX));
 
@@ -178,7 +282,7 @@ function getVisitsBetweenDates(startDate, endDate) {
  */
 function getVisitEventDetails(eventId) {
   try {
-    const calendar = CalendarApp.getCalendarById(CALENDAR_ID_PROP);
+    const calendar = CalendarApp.getCalendarById(CALENDAR_ID);
     const event = calendar.getEventById(eventId);
 
     if (!event) {
@@ -192,7 +296,6 @@ function getVisitEventDetails(eventId) {
       startTime: event.getStartTime(),
       endTime: event.getEndTime(),
       location: event.getLocation(),
-      guests: event.getGuestList(),
       color: event.getColor()
     };
   } catch (error) {
@@ -209,7 +312,7 @@ function getVisitEventDetails(eventId) {
  */
 function updateVisitStatus(eventId, status) {
   try {
-    const calendar = CalendarApp.getCalendarById(CALENDAR_ID_PROP);
+    const calendar = CalendarApp.getCalendarById(CALENDAR_ID);
     const event = calendar.getEventById(eventId);
 
     if (!event) {
@@ -297,20 +400,25 @@ function getAvailableTimeSlots(date, minHour, maxHour, slotMinutes) {
 // ============================================================================
 
 /**
- * カレンダー操作のテスト関数
+ * カレンダー・スプレッドシート操作のテスト関数
  */
-function testCalendarOperations() {
-  Logger.log('=== Calendar Operations Test ===');
+function testCalendarAndSpreadsheetOperations() {
+  Logger.log('=== Calendar & Spreadsheet Operations Test ===');
+
+  // スプレッドシートの初期化
+  initializeSpreadsheet();
 
   // テスト用の訪問希望を作成
   const testVisit = {
     startTime: new Date(2026, 2, 25, 14, 30),
-    userId: 'test-user-001',
-    notes: 'テスト訪問'
+    endTime: new Date(2026, 2, 25, 15, 30),
+    userName: 'テスト利用者',
+    durationMinutes: 60,
+    memo: 'テスト訪問'
   };
 
   // イベント追加
-  const eventId = addVisitToCalendar(testVisit, testVisit.userId);
+  const eventId = addVisitToCalendar(testVisit);
   Logger.log('Created event: ' + eventId);
 
   if (eventId) {
@@ -326,4 +434,8 @@ function testCalendarOperations() {
     const slots = getAvailableTimeSlots(new Date(2026, 2, 25), 9, 18, 30);
     Logger.log('Available slots: ' + JSON.stringify(slots));
   }
+
+  // スプレッドシートから訪問記録を取得
+  const records = getVisitRecords();
+  Logger.log('Visit records: ' + JSON.stringify(records));
 }

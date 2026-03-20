@@ -1,234 +1,271 @@
-# LINE Developers 設定ガイド
+# おれんじさん🍊 - LINE Developers セットアップガイド
 
-このドキュメントでは、訪問看護日程調整システムをLINEと連携させるために、LINE Developersで取得すべき情報と設定手順を説明します。
-
-## 目次
-
-1. [LINE公式アカウントの作成](#line公式アカウントの作成)
-2. [Messaging APIチャネルの作成](#messaging-apiチャネルの作成)
-3. [必要な認証情報の取得](#必要な認証情報の取得)
-4. [Webhookの設定](#webhookの設定)
-5. [LIFF（LINE Front-end Framework）の設定](#liff設定)
-6. [環境変数の設定](#環境変数の設定)
+このガイドでは、LINE Developers での設定手順を説明します。ユーザーがパソコンなしで設定できるよう、**コピペで使える値**を用意しています。
 
 ---
 
-## LINE公式アカウントの作成
+## 📋 必要な情報
 
-### ステップ1：LINE Developersにログイン
+セットアップ完了後、以下の情報が必要になります：
 
-1. [LINE Developers](https://developers.line.biz/ja/) にアクセス
-2. 「ログイン」をクリック
-3. LINEアカウントでログイン（ない場合は新規作成）
-
-### ステップ2：プロバイダーの作成
-
-1. ダッシュボードから「プロバイダーを作成」をクリック
-2. プロバイダー名を入力（例：「訪問看護システム」）
-3. 「作成」をクリック
-
-### ステップ3：LINE公式アカウントの作成
-
-1. 作成したプロバイダーをクリック
-2. 「チャネルを作成」をクリック
-3. 「Messaging API」を選択
-4. 以下の情報を入力：
-   - **チャネル名**：訪問看護日程調整システム
-   - **チャネルの説明**：訪問看護の日程調整をLINEで行うシステム
-   - **大業種**：医療・福祉
-   - **小業種**：医療・福祉（その他）
-5. 「作成」をクリック
+| 項目 | 説明 | 取得元 |
+|------|------|--------|
+| **Channel ID** | LINE チャネルの識別子 | LINE Developers |
+| **Channel Secret** | チャネルの秘密鍵 | LINE Developers |
+| **Channel Access Token** | API 認証用トークン | LINE Developers |
+| **LIFF ID** | LIFF アプリケーションの ID | LINE Developers |
+| **GAS Deployment URL** | Google Apps Script のデプロイメント URL | Google Cloud |
 
 ---
 
-## Messaging APIチャネルの作成
+## 🚀 セットアップ手順
 
-### ステップ1：チャネル基本設定
+### ステップ 1: LINE Developers コンソールにアクセス
 
-1. 作成したMessaging APIチャネルをクリック
-2. 「チャネル基本設定」タブを開く
-3. 以下の情報を確認・記録します：
+1. [LINE Developers](https://developers.line.biz/) にアクセス
+2. LINE ビジネスアカウントでログイン（なければ作成）
+3. 「Create」ボタンをクリックして新しいプロバイダーを作成
 
-| 項目 | 説明 | 用途 |
-|------|------|------|
-| **チャネルID** | チャネルの一意識別子 | GASの設定に使用 |
-| **チャネルシークレット** | Webhook署名検証用 | GASの設定に使用 |
+### ステップ 2: プロバイダーを作成
 
----
+1. **Provider Name**: `おれんじさん🍊` と入力
+2. 「Create」をクリック
 
-## 必要な認証情報の取得
+### ステップ 3: チャネルを作成
 
-### 1. Channel Access Token（チャネルアクセストークン）
-
-このトークンは、LINEにメッセージを送信する際に必要です。
-
-**取得方法：**
-
-1. 「チャネル基本設定」タブを開く
-2. 「Channel access token」セクションまでスクロール
-3. 「発行」ボタンをクリック
-4. 表示されたトークンをコピー
-
-**⚠️ 重要：** このトークンは絶対に公開しないでください。GitHubにコミットしないよう注意してください。
-
-**記録する情報：**
-```
-LINE_CHANNEL_ACCESS_TOKEN = [ここにトークンを貼り付け]
-```
-
-### 2. Channel Secret（チャネルシークレット）
-
-このシークレットは、LINEからのWebhookの署名を検証する際に使用します。
-
-**取得方法：**
-
-1. 「チャネル基本設定」タブを開く
-2. 「Channel secret」セクションを探す
-3. 表示されたシークレットをコピー
-
-**記録する情報：**
-```
-LINE_CHANNEL_SECRET = [ここにシークレットを貼り付け]
-```
-
-### 3. チャネルID
-
-**取得方法：**
-
-1. 「チャネル基本設定」タブを開く
-2. 「チャネルID」を確認
-3. コピー
-
-**記録する情報：**
-```
-LINE_CHANNEL_ID = [ここにチャネルIDを貼り付け]
-```
-
----
-
-## Webhookの設定
-
-### ステップ1：Webhook URLの設定
-
-1. 「チャネル基本設定」タブを開く
-2. 「Webhook設定」セクションを探す
-3. 「Webhook使用設定」を「有効」に変更
-4. 「Webhook URL」フィールドに、GASのデプロイメントURLを入力
-
-**Webhook URLの形式：**
-```
-https://script.google.com/macros/d/{DEPLOYMENT_ID}/usercallback
-```
-
-### ステップ2：Webhook検証
-
-1. 「検証」ボタンをクリック
-2. 「成功」と表示されればOK
-3. 失敗した場合は、GASのデプロイメントを確認してください
-
----
-
-## LIFF設定
-
-### ステップ1：LIFFアプリの作成
-
-1. 「チャネル基本設定」タブを開く
-2. 「LIFF」セクションを探す
-3. 「追加」ボタンをクリック
+1. 作成したプロバイダーを選択
+2. 「Create Channel」をクリック
+3. **Channel Type**: 「Messaging API」を選択
 4. 以下の情報を入力：
 
-| 項目 | 値 |
-|------|-----|
-| **LIFFアプリ名** | 訪問看護日程選択 |
-| **プラットフォーム** | Web |
-| **エンドポイントURL** | `https://your-domain.com/line-liff/index.html` |
-| **スコープ** | `profile`, `openid` |
-| **ボットの友だち追加画面を表示** | オン |
-
-5. 「作成」をクリック
-
-### ステップ2：LIFF IDの取得
-
-1. 作成したLIFFアプリをクリック
-2. 「LIFF ID」をコピー
-
-**記録する情報：**
 ```
-LINE_LIFF_ID = [ここにLIFF IDを貼り付け]
+Display Name: おれんじさん🍊
+Description: 訪問看護予約システム
+Category: Utilities
+Subcategory: Productivity
+```
+
+5. 「Create」をクリック
+
+### ステップ 4: Channel Credentials を取得
+
+1. 作成したチャネルを開く
+2. 左メニューから「Basic settings」をクリック
+3. 以下の情報をコピーして保存：
+
+**Channel ID:**
+```
+[ここに Channel ID をコピー]
+```
+
+**Channel Secret:**
+```
+[ここに Channel Secret をコピー]
+```
+
+### ステップ 5: Channel Access Token を生成
+
+1. 同じ「Basic settings」ページをスクロール
+2. 「Messaging API」セクションを探す
+3. 「Channel access token」の「Generate」をクリック
+4. 生成されたトークンをコピー：
+
+**Channel Access Token:**
+```
+[ここに Channel Access Token をコピー]
+```
+
+### ステップ 6: LIFF を作成
+
+1. 左メニューから「LIFF」をクリック
+2. 「Create」をクリック
+3. 以下の情報を入力：
+
+```
+LIFF app name: おれんじさん🍊 予約システム
+Redirect URL: https://[あなたのドメイン]/line-liff/index.html
+Endpoint URL: https://[あなたのドメイン]/line-liff/index.html
+```
+
+4. **LIFF Type**: 「Full」を選択
+5. 「Create」をクリック
+6. 生成された **LIFF ID** をコピー：
+
+**LIFF ID:**
+```
+[ここに LIFF ID をコピー]
 ```
 
 ---
 
-## 環境変数の設定
+## 🔐 Google Apps Script (GAS) のデプロイ
 
-### GASへの設定
+### ステップ 1: Google Apps Script を開く
 
-GASプロジェクトで、以下のスクリプトプロパティを設定します：
+1. [Google Drive](https://drive.google.com) にアクセス
+2. 「新規」→「その他」→「Google Apps Script」をクリック
+3. 新しいプロジェクトが開きます
 
-1. GASエディタを開く
-2. 「プロジェクトの設定」（⚙️アイコン）をクリック
-3. 「スクリプトプロパティ」セクションを開く
-4. 以下のキーと値を追加：
+### ステップ 2: コードをコピー
 
-| キー | 値 |
-|------|-----|
-| `LINE_CHANNEL_ACCESS_TOKEN` | [取得したアクセストークン] |
-| `LINE_CHANNEL_SECRET` | [取得したシークレット] |
-| `CALENDAR_ID` | [Googleカレンダーの公開ID] |
+1. GitHub リポジトリから以下のファイルをコピー：
+   - `gas/Code.gs`
+   - `gas/CalendarAPI.gs`
+
+2. Google Apps Script エディタに貼り付け
+
+### ステップ 3: スクリプト プロパティを設定
+
+1. 左メニューから「プロジェクト設定」をクリック
+2. 下にスクロールして「スクリプト プロパティ」を開く
+3. 「プロパティを追加」をクリック
+4. 以下の情報を入力：
+
+| プロパティ | 値 |
+|-----------|-----|
+| `LINE_CHANNEL_ACCESS_TOKEN` | [ステップ 5 でコピーしたトークン] |
+| `LINE_CHANNEL_SECRET` | [ステップ 4 でコピーした Secret] |
 | `ADMIN_EMAIL` | [管理者のメールアドレス] |
 
-### Googleカレンダー IDの取得
+### ステップ 4: デプロイ
 
-1. [Google Calendar](https://calendar.google.com) を開く
-2. 「設定」→「設定」をクリック
-3. 使用するカレンダーを選択
-4. 「統合」タブを開く
-5. 「カレンダーID」をコピー
+1. 上部の「デプロイ」をクリック
+2. 「新しいデプロイ」をクリック
+3. **タイプ**: 「ウェブアプリ」を選択
+4. **実行者**: 「自分」を選択
+5. **アクセス**: 「全員」を選択
+6. 「デプロイ」をクリック
+7. **Deployment URL** をコピー：
 
----
-
-## 動作確認
-
-### テスト手順
-
-1. LINE公式アカウントを友だち追加
-2. 以下のメッセージを送信：
-   ```
-   2026-03-25 14:30
-   ```
-3. 確認メッセージが返ってくることを確認
-4. Googleカレンダーに予定が追加されていることを確認
-
-### トラブルシューティング
-
-| 問題 | 原因 | 解決方法 |
-|------|------|---------|
-| Webhookが接続できない | URLが間違っている | GASのデプロイメントURLを確認 |
-| メッセージが返ってこない | トークンが無効 | アクセストークンを再発行 |
-| カレンダーに追加されない | CALENDAR_IDが間違っている | カレンダーIDを再確認 |
+**GAS Deployment URL:**
+```
+[ここに Deployment URL をコピー]
+```
 
 ---
 
-## セキュリティのベストプラクティス
+## 📝 設定ファイルの更新
 
-1. **トークンとシークレットを保護する**
-   - `.env` ファイルに保存し、`.gitignore` に追加
-   - 本番環境では環境変数として設定
+### config.js を更新
 
-2. **Webhook署名の検証**
-   - 常に `verifyLineSignature()` 関数でWebhook署名を検証
+`line-liff/config.js` ファイルを開いて、以下の値を置き換えます：
 
-3. **定期的なトークン更新**
-   - セキュリティ向上のため、定期的にアクセストークンを再発行
+```javascript
+// LINE LIFF 設定
+const LIFF_ID = 'YOUR_LIFF_ID';  // ← LIFF ID に置き換え
+const GAS_DEPLOYMENT_URL = 'YOUR_GAS_DEPLOYMENT_URL';  // ← GAS URL に置き換え
 
-4. **ログの監視**
-   - GASのログを定期的に確認し、不正なアクセスがないか確認
+// LINE Messaging API 設定
+const LINE_CHANNEL_ID = 'YOUR_CHANNEL_ID';  // ← Channel ID に置き換え
+const LINE_CHANNEL_SECRET = 'YOUR_CHANNEL_SECRET';  // ← Channel Secret に置き換え
+const LINE_CHANNEL_ACCESS_TOKEN = 'YOUR_CHANNEL_ACCESS_TOKEN';  // ← Access Token に置き換え
+```
+
+### 例：
+
+```javascript
+const LIFF_ID = 'C1234567890abcdef1234567890abcdef';
+const GAS_DEPLOYMENT_URL = 'https://script.google.com/macros/d/1234567890abcdef/usercallback';
+const LINE_CHANNEL_ID = '1234567890';
+const LINE_CHANNEL_SECRET = 'abcdef1234567890abcdef1234567890';
+const LINE_CHANNEL_ACCESS_TOKEN = 'Channel access token here...';
+```
 
 ---
 
-## 参考資料
+## 🔗 Webhook URL の設定
 
-- [LINE Developers](https://developers.line.biz/ja/)
-- [Messaging API ドキュメント](https://developers.line.biz/en/docs/messaging-api/)
-- [LIFF ドキュメント](https://developers.line.biz/en/docs/liff/)
+### LINE Developers での設定
+
+1. LINE Developers コンソールで、作成したチャネルを開く
+2. 左メニューから「Messaging API」をクリック
+3. 「Webhook settings」セクションを探す
+4. **Webhook URL** に以下を入力：
+
+```
+https://script.google.com/macros/d/[Deployment ID]/usercallback
+```
+
+5. 「Verify」をクリックして接続確認
+6. 「Use webhook」を有効化
+
+---
+
+## ✅ テスト
+
+### 1. LINE での動作確認
+
+1. LINE で作成したアカウントを友達追加
+2. メッセージを送信して応答確認
+
+### 2. LIFF での動作確認
+
+1. LIFF リンクを LINE で開く
+2. 日付と時間を選択
+3. 予約を送信
+4. Google カレンダーに予定が追加されたか確認
+
+### 3. スプレッドシートの確認
+
+1. 作成したスプレッドシートを開く
+2. 予約データが記録されているか確認
+
+---
+
+## 🆘 トラブルシューティング
+
+### 問題: Webhook が接続できない
+
+**原因**: GAS Deployment URL が正しくない
+
+**解決策**:
+1. GAS のデプロイメント URL を確認
+2. LINE Developers の Webhook URL を更新
+3. 「Verify」で再度接続確認
+
+### 問題: LIFF が開かない
+
+**原因**: LIFF ID が正しくない
+
+**解決策**:
+1. LINE Developers で LIFF ID を確認
+2. `config.js` の `LIFF_ID` を更新
+3. ブラウザキャッシュをクリア
+
+### 問題: 予約がカレンダーに表示されない
+
+**原因**: カレンダー ID が正しくない、または権限がない
+
+**解決策**:
+1. Google カレンダーの設定を確認
+2. 「訪問看護（おれんじさん）」カレンダーが存在するか確認
+3. GAS に適切な権限があるか確認
+
+---
+
+## 📚 参考資料
+
+- [LINE Developers ドキュメント](https://developers.line.biz/ja/docs/)
+- [LIFF リファレンス](https://developers.line.biz/ja/docs/liff/)
 - [Google Apps Script ドキュメント](https://developers.google.com/apps-script)
+
+---
+
+## 💡 よくある質問
+
+**Q: パソコンがない場合、どうやって設定するのか？**
+
+A: スマートフォンのブラウザで LINE Developers にアクセスして、同じ手順で設定できます。ただし、Google Apps Script のデプロイは PC での操作が推奨されます。
+
+**Q: 複数の訪問看護事業所で使用できるか？**
+
+A: はい。新しいプロバイダーとチャネルを作成することで、複数の事業所で独立した予約システムを運用できます。
+
+**Q: 予約データはどこに保存されるのか？**
+
+A: Google カレンダーと Google スプレッドシートに自動保存されます。データは Google Drive に安全に保管されます。
+
+---
+
+**最終更新**: 2026年3月21日  
+**バージョン**: 1.0
