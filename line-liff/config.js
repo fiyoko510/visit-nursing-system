@@ -14,10 +14,10 @@
 // ============================================================================
 
 // LINE Developers で取得した LIFF ID
-const LIFF_ID = 'YOUR_LIFF_ID';
+const LIFF_ID = '2009557143-qmrzpjZm';
 
 // GAS デプロイメント URL（デプロイ後に設定）
-const GAS_DEPLOYMENT_URL = 'YOUR_GAS_DEPLOYMENT_URL';
+const GAS_DEPLOYMENT_URL = 'https://script.google.com/macros/d/AKfycbycb69qZg0wwtvB3lEtyRK4Nh5QLsXeok9Er79X60hlMlrhtSQ8s1ouX3qJB0lrOuUg/usercallback';
 
 // ============================================================================
 // Google API 設定
@@ -36,13 +36,13 @@ const SPREADSHEET_ID = '1OiE4g3gWDC0cuSeBmcZCMP70G0-XPOIqAQtFS3rlRI4';
 // ============================================================================
 
 // LINE Channel ID（LINE Developers で取得）
-const LINE_CHANNEL_ID = 'YOUR_CHANNEL_ID';
+const LINE_CHANNEL_ID = '2009557319';
 
 // LINE Channel Secret（LINE Developers で取得）
-const LINE_CHANNEL_SECRET = 'YOUR_CHANNEL_SECRET';
+const LINE_CHANNEL_SECRET = '24f9b274fdbb2f24da0768a2a1bd7544';
 
 // LINE Channel Access Token（LINE Developers で取得）
-const LINE_CHANNEL_ACCESS_TOKEN = 'YOUR_CHANNEL_ACCESS_TOKEN';
+const LINE_CHANNEL_ACCESS_TOKEN = 'sdCrp/y6qz+12rJoyzKz+qzbt22X3G4SPoTLKCDzRAz0ul5lTu+lG74b4SvjPthv/Gek8AOv3zmJKUXOeMaYHSJ2eK3V2hG+RliaPyQOv3YLSiMEzh2xrpTVDBPD5/EeYJ6/M5RpAcWqZY49WRmAoAdB04t89/l0/w1cDnyilFU=';
 
 // ============================================================================
 // アプリケーション設定
