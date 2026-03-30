@@ -23,7 +23,6 @@ const SPREADSHEET_ID = '1OiE4g3gWDC0cuSeBmcZCMP70G0-XPOIqAQtFS3rlRI4';
 const SHEET_NAME = '予約管理';
 
 const VISIT_EVENT_PREFIX = '[訪問看護]';
-const DEFAULT_DURATION_MINUTES = 30;
 
 // ============================================================================
 // スプレッドシート操作関数
