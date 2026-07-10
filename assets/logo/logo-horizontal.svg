@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 180" role="img" aria-label="おれんじさん 訪問看護予約システム">
+  <defs>
+    <linearGradient id="orangeGradH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFB65C"/>
+      <stop offset="1" stop-color="#F07818"/>
+    </linearGradient>
+    <linearGradient id="leafGradH" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8CC152"/>
+      <stop offset="1" stop-color="#5FA33C"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ロゴマーク -->
+  <g transform="translate(10 -8) scale(0.75)">
+    <circle cx="128" cy="150" r="94" fill="url(#orangeGradH)"/>
+    <ellipse cx="94" cy="112" rx="30" ry="18" fill="#FFFFFF" opacity="0.30"
+             transform="rotate(-28 94 112)"/>
+    <path d="M128 58 C128 44 136 34 150 28" fill="none"
+          stroke="#8B5E3C" stroke-width="10" stroke-linecap="round"/>
+    <path d="M150 34 C156 12 182 2 206 12 C202 36 178 50 154 44 C151 43 149 39 150 34 Z"
+          fill="url(#leafGradH)"/>
+    <path d="M154 40 C168 32 184 24 198 18" fill="none"
+          stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+    <path d="M128 196
+             C 116 185, 88 165, 88 142
+             C 88 126, 100 116, 113 116
+             C 120 116, 126 120, 128 126
+             C 130 120, 136 116, 143 116
+             C 156 116, 168 126, 168 142
+             C 168 165, 140 185, 128 196 Z"
+          fill="#FFFFFF"/>
+    <g fill="#F07818">
+      <rect x="122" y="128" width="12" height="42" rx="4"/>
+      <rect x="107" y="143" width="42" height="12" rx="4"/>
+    </g>
+  </g>
+
+  <!-- ロゴタイプ -->
+  <text x="220" y="98" font-size="58" font-weight="700" fill="#5C4632"
+        font-family="'Hiragino Maru Gothic ProN','Rounded Mplus 1c','M PLUS Rounded 1c','Hiragino Sans','Noto Sans JP',sans-serif">おれんじさん</text>
+  <text x="223" y="140" font-size="24" letter-spacing="6" fill="#F07818"
+        font-family="'Hiragino Maru Gothic ProN','Rounded Mplus 1c','M PLUS Rounded 1c','Hiragino Sans','Noto Sans JP',sans-serif">訪問看護予約システム</text>
+</svg>
