@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ひなたぼっこ 避難訓練＆トークイベント（ひなたキャンプ案）</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Noto+Sans+JP:wght@400;500;700;900&family=Yusei+Magic&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sun:#FFD94A;        /* 防災イエロー（ベース） */
+    --cream:#FFF9E8;      /* カードのクリーム */
+    --kraft:#8B5E3C;      /* クラフト紙ブラウン */
+    --choco:#4A3728;      /* 本文のこげ茶 */
+    --hinata:#F0862E;     /* ひなたオレンジ */
+    --night:#334E68;      /* 宿泊ブロックの夜 */
+    --star:#F8C64B;
+    --muted:#7A6248;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  @page{size:A4;margin:0;}
+  body{
+    font-family:'Noto Sans JP',sans-serif;
+    color:var(--choco);
+    background:#888;
+    padding:8px;
+  }
+  .scaler{transform-origin:top left;}
+  .a4{
+    width:794px;height:1123px; /* A4 @96dpi */
+    background:var(--sun);
+    position:relative;overflow:hidden;
+    box-shadow:0 4px 24px rgba(0,0,0,.3);
+    display:flex;flex-direction:column;
+    padding:30px 42px 26px;
+  }
+  /* うっすら方眼（キャンプノート風） */
+  .a4::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:
+      linear-gradient(rgba(139,94,60,.06) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(139,94,60,.06) 1px,transparent 1px);
+    background-size:28px 28px;
+  }
+
+  /* ===== 太陽 ===== */
+  .sun{position:absolute;top:18px;right:30px;width:108px;height:108px;z-index:1;}
+
+  /* ===== ヘッダー（キャッチ→帯→タイトルを1グループに近接） ===== */
+  .head{position:relative;z-index:2;text-align:center;margin-top:2px;}
+  .catch{
+    font-family:'Yusei Magic',sans-serif;
+    font-size:15px;line-height:1.6;letter-spacing:.05em;
+    padding:0 120px;
+  }
+  .head .sub{
+    display:inline-block;margin-top:12px;
+    font-family:'Zen Maru Gothic',sans-serif;
+    font-size:15px;font-weight:700;letter-spacing:.35em;text-indent:.35em;
+    color:var(--cream);background:var(--kraft);
+    padding:5px 30px;border-radius:999px;
+  }
+  .head h1{
+    font-family:'Zen Maru Gothic',sans-serif;
+    font-size:56px;font-weight:900;line-height:1.08;
+    letter-spacing:0;margin-top:6px;color:var(--choco);
+    white-space:nowrap;
+  }
+  .head h1 .amp{color:var(--hinata);font-size:38px;padding:0 2px;}
+  .head .wave{display:block;margin:2px auto 0;}
+
+  /* ===== 日時：チケット風（ジャンプ率の主役） ===== */
+  .ticket{
+    margin-top:14px;position:relative;z-index:2;
+    background:var(--kraft);color:var(--cream);
+    border-radius:16px;
+    padding:14px 34px;
+    display:flex;align-items:center;
+    font-family:'Zen Maru Gothic',sans-serif;
+  }
+  .ticket::before{
+    content:"";position:absolute;inset:5px;
+    border:2px dashed rgba(255,249,232,.5);border-radius:11px;
+    pointer-events:none;
+  }
+  .ticket .notch{
+    position:absolute;top:50%;width:22px;height:22px;border-radius:50%;
+    background:var(--sun);transform:translateY(-50%);
+  }
+  .ticket .notch.l{left:-11px;}
+  .ticket .notch.r{right:-11px;}
+  .ticket .date{
+    font-size:64px;font-weight:900;letter-spacing:.01em;line-height:1;
+    display:flex;align-items:baseline;gap:6px;
+  }
+  .ticket .date .youbi{font-size:22px;font-weight:700;}
+  .ticket .start{
+    margin-left:22px;padding-left:22px;
+    border-left:2px dashed rgba(255,249,232,.5);
+    font-size:26px;font-weight:900;line-height:1.2;
+  }
+  .ticket .start small{
+    display:block;font-size:11px;font-weight:500;letter-spacing:.2em;opacity:.85;
+  }
+  .ticket .meta{
+    margin-left:auto;text-align:right;
+    font-size:15px;font-weight:700;line-height:1.55;
+  }
+  .ticket .meta small{font-size:11px;font-weight:500;display:block;opacity:.9;}
+
+  /* ===== プログラム（同じ骨格を反復） ===== */
+  .timeline{margin-top:14px;flex:1;display:flex;flex-direction:column;gap:12px;position:relative;z-index:2;}
+  .block{
+    flex:1; /* 余った高さを3ブロックで均等に分け合う */
+    background:var(--cream);border-radius:16px;
+    padding:14px 22px 14px 0;
+    display:flex;gap:16px;align-items:center;
+    position:relative;
+    border-left:9px solid var(--star);
+    box-shadow:0 2px 0 rgba(139,94,60,.25);
+  }
+  .block.sunset{border-left-color:var(--hinata);}
+  .block.night{border-left-color:var(--night);}
+  /* マスキングテープ（番号入り・全ブロックで反復） */
+  .block .tape{
+    position:absolute;top:-9px;left:30px;
+    width:78px;height:19px;background:rgba(240,134,46,.5);
+    transform:rotate(-3deg);border-radius:2px;
+    font-family:'Yusei Magic',sans-serif;font-size:10px;letter-spacing:.14em;
+    color:var(--choco);display:flex;align-items:center;justify-content:center;
+  }
+  .block.night .tape{background:rgba(248,198,75,.65);}
+  /* 時間カラム：幅・並びを固定して整列 */
+  .block .time{
+    width:96px;flex-shrink:0;text-align:center;
+    font-family:'Zen Maru Gothic',sans-serif;
+    font-size:17px;font-weight:900;line-height:1.3;
+  }
+  .block .time .tag{
+    display:block;width:72px;margin:0 auto 5px;
+    font-family:'Yusei Magic',sans-serif;font-weight:400;
+    font-size:11px;color:var(--choco);background:var(--star);
+    border-radius:999px;padding:2px 0;
+  }
+  .block.sunset .time .tag{background:var(--hinata);color:var(--cream);}
+  .block.night .time .tag{background:var(--star);color:var(--night);}
+  .block .time .arw{display:block;font-size:11px;opacity:.55;line-height:1.1;}
+  .block .icon{width:72px;height:72px;flex-shrink:0;}
+  .block .body{flex:1;min-width:0;}
+  .block h2{
+    font-family:'Zen Maru Gothic',sans-serif;
+    font-size:26px;font-weight:900;line-height:1.2;
+    display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  }
+  .block h2 .lead{
+    font-family:'Yusei Magic',sans-serif;font-weight:400;
+    font-size:12px;color:var(--muted);letter-spacing:.02em;
+  }
+  .block.night h2 .lead{color:#B8CCDC;}
+  .block p{font-size:11.5px;line-height:1.65;margin-top:3px;}
+  .block .fee{
+    display:inline-block;margin-top:7px;
+    font-size:11px;font-weight:700;
+    background:var(--choco);color:var(--cream);
+    border-radius:999px;padding:3px 14px;letter-spacing:.03em;
+  }
+  .block .fee b{font-size:14px;font-weight:900;}
+  .block.night .fee{background:var(--star);color:var(--night);}
+
+  /* ===== 登壇者紹介（説明文と点線で区切って近接） ===== */
+  .people{
+    display:flex;gap:12px;margin-top:9px;padding-top:9px;
+    border-top:2px dashed rgba(139,94,60,.3);
+  }
+  .person{flex:1;display:flex;gap:8px;align-items:flex-start;text-align:left;}
+  .person .photo{
+    width:52px;height:52px;border-radius:50%;flex-shrink:0;
+    border:2.5px dashed var(--kraft);background:var(--sun);
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;color:var(--muted);line-height:1.3;
+  }
+  .person .name{font-size:11.5px;font-weight:900;line-height:1.3;}
+  .person .role{font-size:8.5px;line-height:1.4;color:var(--muted);margin-top:2px;}
+  .person .quote{
+    font-family:'Yusei Magic',sans-serif;
+    font-size:9px;color:var(--hinata);margin-top:2px;line-height:1.35;
+  }
+
+  .block.night{
+    background:var(--night);color:var(--cream);
+    box-shadow:0 2px 0 rgba(0,0,0,.25);
+  }
+
+  /* ===== フッター：CTAはオレンジで最大コントラスト ===== */
+  .footer{
+    margin-top:14px;position:relative;z-index:2;
+    background:var(--hinata);color:var(--cream);
+    border-radius:16px;
+    padding:16px 26px;
+    display:flex;align-items:center;gap:24px;
+    box-shadow:0 2px 0 rgba(139,94,60,.4);
+  }
+  .footer .apply{flex:1;}
+  .footer h3{
+    font-family:'Zen Maru Gothic',sans-serif;
+    font-size:26px;font-weight:900;line-height:1.25;
+    margin-bottom:5px;
+  }
+  .footer h3 small{
+    display:block;font-size:11px;font-weight:700;letter-spacing:.3em;
+    opacity:.9;margin-bottom:2px;
+  }
+  .footer p{font-size:12.5px;line-height:1.7;font-weight:500;}
+  .footer .host{
+    font-size:11px;margin-top:8px;padding-top:7px;
+    border-top:1px dashed rgba(255,249,232,.5);opacity:.95;
+  }
+  .qr-wrap{flex-shrink:0;text-align:center;}
+  .qr{
+    width:118px;height:118px;
+    border-radius:10px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;background:#FFF;color:var(--muted);
+    box-shadow:0 2px 6px rgba(74,55,40,.25);
+  }
+  .qr span{font-size:8px;line-height:1.4;}
+  .qr-label{
+    font-family:'Yusei Magic',sans-serif;
+    font-size:11.5px;margin-top:5px;color:var(--cream);
+  }
+
+  /* 注釈は最小サイズで最下部に（本文とのジャンプ率確保） */
+  .note{
+    position:relative;z-index:2;
+    font-size:9px;color:var(--muted);margin-top:7px;text-align:center;
+    letter-spacing:.02em;
+  }
+</style>
+</head>
+<body>
+<div class="scaler">
+<div class="a4">
+
+  <!-- 手描き風の太陽 -->
+  <svg class="sun" viewBox="0 0 100 100" fill="none">
+    <circle cx="50" cy="50" r="24" fill="#F8C64B" stroke="#F0862E" stroke-width="3"/>
+    <g stroke="#F0862E" stroke-width="3.5" stroke-linecap="round">
+      <path d="M50 12 L50 20"/><path d="M50 80 L50 88"/>
+      <path d="M12 50 L20 50"/><path d="M80 50 L88 50"/>
+      <path d="M23 23 L29 29"/><path d="M71 71 L77 77"/>
+      <path d="M77 23 L71 29"/><path d="M29 71 L23 77"/>
+    </g>
+    <path d="M42 52 Q46 57 50 52 Q54 57 58 52" stroke="#8B5E3C" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <circle cx="43" cy="45" r="2" fill="#8B5E3C"/><circle cx="57" cy="45" r="2" fill="#8B5E3C"/>
+  </svg>
+
+  <div class="head">
+    <p class="catch">
+      発達に特性のある子と家族のために。<br>いざという時、みんなで守り合う知恵を学びませんか？
+    </p>
+    <span class="sub">小規模自主避難所</span>
+    <h1>避難訓練<span class="amp">＆</span>トークイベント</h1>
+    <svg class="wave" width="420" height="12" viewBox="0 0 420 12" fill="none">
+      <path d="M2 8 Q22 2 42 8 T82 8 T122 8 T162 8 T202 8 T242 8 T282 8 T322 8 T362 8 T418 8"
+        stroke="#F0862E" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="ticket">
+    <span class="notch l"></span><span class="notch r"></span>
+    <div class="date">10/3<span class="youbi">（土）</span></div>
+    <div class="start"><small>START</small>13:00〜</div>
+    <div class="meta">
+      場所：ひなたぼっこ
+      <small>定員：宿泊体験のみ 先着30名様</small>
+    </div>
+  </div>
+
+  <div class="timeline">
+
+    <div class="block">
+      <span class="tape">PROGRAM 1</span>
+      <div class="time">
+        <span class="tag">ひる</span>
+        13:00<span class="arw">▼</span>14:30
+      </div>
+      <svg class="icon" viewBox="0 0 80 80" fill="none">
+        <!-- メガホンとふきだし -->
+        <path d="M14 40 L38 28 L38 54 L14 44 Z" fill="#F8C64B" stroke="#4A3728" stroke-width="3" stroke-linejoin="round"/>
+        <rect x="10" y="38" width="8" height="10" rx="2" fill="#F0862E" stroke="#4A3728" stroke-width="3"/>
+        <g stroke="#F0862E" stroke-width="3.5" stroke-linecap="round">
+          <path d="M46 30 Q52 26 56 20"/>
+          <path d="M48 41 L62 41"/>
+          <path d="M46 52 Q52 56 56 62"/>
+        </g>
+      </svg>
+      <div class="body">
+        <h2>トークイベント<span class="lead">〜教えてふじさん・何でも聞いちゃおう〜</span></h2>
+        <p>もしもの時、どう備える？　防災のプロと一緒に考える90分。</p>
+        <div class="people">
+          <div class="person">
+            <div class="photo">写真</div>
+            <div>
+              <div class="name">藤野 龍夫さん</div>
+              <div class="role">災害支援ボランティア<br>チームふじさん代表</div>
+              <div class="quote">防災のギモン、何でもぶつけて！</div>
+            </div>
+          </div>
+          <div class="person">
+            <div class="photo">写真</div>
+            <div>
+              <div class="name">犬山市防災交通課のみなさん</div>
+              <div class="role">10月から始まる<br>新しい避難所制度を解説</div>
+              <div class="quote">やさしくお話しします</div>
+            </div>
+          </div>
+          <div class="person">
+            <div class="photo">写真</div>
+            <div>
+              <div class="name">三輪さん</div>
+              <div class="role">こども女性ネット東海<br>犬山エリアマネージャー</div>
+              <div class="quote">被災地で見えた「本当に必要な備え」</div>
+            </div>
+          </div>
+        </div>
+        <span class="fee">参加費 <b>500</b>円（災害支援へのカンパとなります）</span>
+      </div>
+    </div>
+
+    <div class="block sunset">
+      <span class="tape">PROGRAM 2</span>
+      <div class="time">
+        <span class="tag">ゆうがた</span>
+        15:00<span class="arw">▼</span>18:00
+      </div>
+      <svg class="icon" viewBox="0 0 80 80" fill="none">
+        <!-- 薪とカレー鍋 -->
+        <path d="M18 66 L62 66" stroke="#8B5E3C" stroke-width="4" stroke-linecap="round"/>
+        <path d="M24 66 L56 66 L52 46 L28 46 Z" fill="#F0862E" stroke="#4A3728" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M24 46 L56 46" stroke="#4A3728" stroke-width="3" stroke-linecap="round"/>
+        <path d="M40 40 Q35 32 40 26 Q45 32 40 40" fill="#F8C64B" stroke="#F0862E" stroke-width="2.5"/>
+        <g stroke="#8B5E3C" stroke-width="2.5" stroke-linecap="round">
+          <path d="M30 20 Q30 14 34 12"/><path d="M46 20 Q46 14 50 12"/>
+        </g>
+      </svg>
+      <div class="body">
+        <h2>炊き出し体験</h2>
+        <p>薪（まき）を使ってご飯とカレーを作って食べよう！<br>
+        電気を使わない調理にみんなで挑戦します。防災食などのお土産付きです。</p>
+        <span class="fee">参加費 <b>500</b>円</span>
+      </div>
+    </div>
+
+    <div class="block night">
+      <span class="tape">PROGRAM 3</span>
+      <div class="time">
+        <span class="tag">よる〜あさ</span>
+        18:00<span class="arw">▼</span>翌朝
+      </div>
+      <svg class="icon" viewBox="0 0 80 80" fill="none">
+        <!-- テントと月と星 -->
+        <path d="M14 62 L40 24 L66 62 Z" fill="#F8C64B" stroke="#FFF9E8" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M40 62 L40 40 L50 62 Z" fill="#8B5E3C" stroke="#FFF9E8" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M62 16 A9 9 0 1 0 70 28 A7 7 0 0 1 62 16 Z" fill="#FFF9E8"/>
+        <g fill="#FFF9E8">
+          <circle cx="18" cy="18" r="2"/><circle cx="30" cy="12" r="1.6"/><circle cx="50" cy="10" r="1.6"/>
+        </g>
+      </svg>
+      <div class="body">
+        <h2>宿泊体験</h2>
+        <p>電気を極力使わない、リアルな避難所体験。<br>
+        プロパンガスや薪を使い、全員で非常用トイレも体験します。翌朝はみんなでおにぎりを作ります。</p>
+        <span class="fee">高校生以上 <b>1,000</b>円 ／ 小中学生 <b>500</b>円</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div class="apply">
+      <h3><small>ENTRY</small>お申し込みはこちら</h3>
+      <p>右のQRコード、またはGoogleフォームより<br>必要事項をご入力の上、お申し込みください。</p>
+      <p class="host">主催・お問い合わせ：ひなたぼっこ</p>
+    </div>
+    <div class="qr-wrap">
+      <div class="qr">
+        <svg viewBox="0 0 100 100" width="74" height="74" fill="none">
+          <!-- QRの目印（差し替え用ダミー） -->
+          <g stroke="#8B5E3C" stroke-width="6" fill="none">
+            <rect x="8" y="8" width="26" height="26"/>
+            <rect x="66" y="8" width="26" height="26"/>
+            <rect x="8" y="66" width="26" height="26"/>
+          </g>
+          <g fill="#8B5E3C">
+            <rect x="16" y="16" width="10" height="10"/>
+            <rect x="74" y="16" width="10" height="10"/>
+            <rect x="16" y="74" width="10" height="10"/>
+            <rect x="46" y="46" width="9" height="9"/>
+            <rect x="60" y="58" width="8" height="8"/>
+            <rect x="46" y="70" width="8" height="8"/>
+            <rect x="70" y="46" width="8" height="8"/>
+            <rect x="58" y="82" width="8" height="8"/>
+            <rect x="82" y="62" width="8" height="8"/>
+            <rect x="44" y="10" width="8" height="8"/>
+            <rect x="10" y="46" width="8" height="8"/>
+          </g>
+        </svg>
+        <span>※ここにGoogleフォームの<br>QRコードを配置</span>
+      </div>
+      <div class="qr-label">スマホでかんたん申し込み！</div>
+    </div>
+  </div>
+
+  <p class="note">※「ひなたぼっこ」は、発達に特性を持つ子たちの小規模避難所としての機能を整えています</p>
+
+</div>
+</div>
+<script>
+  function fit(){
+    var scaler = document.querySelector('.scaler');
+    var vw = (window.visualViewport ? window.visualViewport.width  : window.innerWidth);
+    var vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+    var s = Math.min(
+      (vw - 16) / 794,
+      (vh * 0.88) / 1123,   /* 高さは88%に抑えて確実に収める */
+      1
+    );
+    scaler.style.transform = 'scale(' + s + ')';
+    scaler.style.width  = (794 * s) + 'px';
+    scaler.style.height = (1123 * s) + 'px';
+    scaler.style.margin = '0 auto';
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('load', fit);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', fit);
+  fit();
+</script>
+</body>
+</html>
